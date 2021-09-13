@@ -42,7 +42,7 @@ Matrix Hill::getD() const {
 }
 
 bool Hill::setE(const Matrix &E) {
-    if (inv_mod(E).equal(Matrix(std::vector<int>(), 0, 0))) {
+    if (!inv_mod(E).equal(Matrix(std::vector<int>(), 0, 0))) {
         this->E = E;
         this->D = inv_mod(E);
         return true;
@@ -51,7 +51,7 @@ bool Hill::setE(const Matrix &E) {
 }
 
 bool Hill::setD(const Matrix &D) {
-    if (inv_mod(E).equal(Matrix(std::vector<int>(), 0, 0))) {
+    if (!inv_mod(D).equal(Matrix(std::vector<int>(), 0, 0))) {
         this->D = D;
         this->E = inv_mod(D);
         return true;
@@ -92,14 +92,16 @@ Matrix Hill::inv_mod(Matrix A) {
         return Matrix(std::vector<int>(), 0, 0);
     }
     // result matrix initialized to identity
-    Matrix result(std::vector<int>(A.size(1) * A.size(2)), A.size(1), A.size(2));
-    for (int i = 0; i < result.size(1); i++) {
-        result.set(i, i, 1);
+    Matrix identity(std::vector<int>(A.size(1) * A.size(2)), A.size(1), A.size(2));
+    for (int i = 0; i < identity.size(1); i++) {
+        identity.set(i, i, 1);
     }
+    Matrix result = identity;
     Matrix mat = A;
-//    int pivot = 0;
     for (int i = 0; i < A.size(1); i++) {
-        int inverse = ZI29[mat.get(i, i) - 1];
+        int n = mat.get(i, i);
+        if (n == 0) {break;}
+        int inverse = ZI29[n - 1];
         row_mult(result, i, 0, result.size(2), inverse);
         row_mult(mat, i, 0, mat.size(2), inverse);
         for (int j = 0; j < A.size(1); j++) {
@@ -109,18 +111,15 @@ Matrix Hill::inv_mod(Matrix A) {
             }
         }
     }
+    if (!mat.equal(identity)) {
+        return Matrix(std::vector<int>(), 0, 0);
+    }
     return result;
 }
 
-//row_diff(result, j, 0, result.size(2), result, i, result.get(j, k));
-//row_diff(mat, j, 0, mat.size(2), mat, i, mat.get(j, k));
-
 unsigned int Hill::mod(int a, int b) {
-    if (a < 0) {
-        int n = (std::abs(a) / b) + 1;
-        return a - (-1 * n * b);
-    }
-    return a % b;
+    int c = a % b;
+    return (c < 0) ? c + b : c;
 }
 
 void Hill::row_mult(Matrix &A, unsigned int i, unsigned int j, unsigned int k, unsigned int c) {
