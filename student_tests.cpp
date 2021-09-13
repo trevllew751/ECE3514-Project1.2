@@ -59,7 +59,7 @@ TEST_CASE("setD", "[Hill]") {
 
 TEST_CASE("encrypt(string)", "[Hill]") {
     Matrix E(std::vector<int>{17, 23, 11, 5, 9, 2, 20, 3, 12}, 3, 3);
-    Hill LS (E, true);
+    Hill LS(E, true);
     REQUIRE(LS.encrypt("WANT HELP.") == "ZXVXOBREOTLM");
     Matrix A(std::vector<int>(9, 1), 3, 3);
     Hill hill(A, true);
@@ -67,8 +67,22 @@ TEST_CASE("encrypt(string)", "[Hill]") {
 }
 
 TEST_CASE("encrypt(string, Matrix)", "[Hill]") {
-    Matrix zero(std::vector<int>(), 0, 0);
     Matrix E(std::vector<int>{17, 23, 11, 5, 9, 2, 20, 3, 12}, 3, 3);
     Hill LS;
     REQUIRE(LS.encrypt("WANT HELP.", E) == "ZXVXOBREOTLM");
+}
+
+TEST_CASE("decrypt(string)", "[Hill]") {
+    Matrix E(std::vector<int>{17, 23, 11, 5, 9, 2, 20, 3, 12}, 3, 3);
+    Hill LS(E, true);
+    REQUIRE(LS.decrypt("ZXVXOBREOTLM") == "WANT HELP...");
+    Matrix A(std::vector<int>(9, 1), 3, 3);
+    Hill hill(A, false);
+    REQUIRE(hill.decrypt("Hello").empty());
+}
+
+TEST_CASE("decrypt(string, Matrix)", "[Hill]") {
+    Matrix D(std::vector<int>{16, 25, 15, 27, 10, 5, 27, 9, 27}, 3, 3);
+    Hill LS;
+    REQUIRE(LS.decrypt("ZXVXOBREOTLM", D) == "WANT HELP...");
 }

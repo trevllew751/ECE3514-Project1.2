@@ -94,11 +94,29 @@ std::string Hill::encrypt(const std::string &P, const Matrix &E) {
 }
 
 std::string Hill::decrypt(const std::string &C) const {
-    return std::string();
+    if (D.equal(Matrix(std::vector<int>(), 0, 0)) || D.size(1) != D.size(2) ||
+        inv_mod(D).equal(Matrix(std::vector<int>(), 0, 0))) {
+        return "";
+    }
+    Matrix nums = l2num(C, D);
+    Matrix decrypted = D.mult(nums);
+    for (int i = 0; i < decrypted.size(1) * decrypted.size(2); i++) {
+        decrypted.set(i, decrypted.get(i) % 29);
+    }
+    return n2let(decrypted);
 }
 
 std::string Hill::decrypt(const std::string &C, const Matrix &D) {
-    return std::string();
+    if (D.equal(Matrix(std::vector<int>(), 0, 0)) || D.size(1) != D.size(2) ||
+        inv_mod(D).equal(Matrix(std::vector<int>(), 0, 0))) {
+        return "";
+    }
+    Matrix nums = l2num(C, D);
+    Matrix decrypted = D.mult(nums);
+    for (int i = 0; i < decrypted.size(1) * decrypted.size(2); i++) {
+        decrypted.set(i, decrypted.get(i) % 29);
+    }
+    return n2let(decrypted);
 }
 
 bool Hill::kpa(const std::vector<std::string> &P, const std::vector<std::string> &C, unsigned int n) {
@@ -107,7 +125,7 @@ bool Hill::kpa(const std::vector<std::string> &P, const std::vector<std::string>
 
 Matrix Hill::l2num(const std::string &s, const Matrix &E) const {
     unsigned int n = E.size(1);
-    unsigned int numColumns = (s.length() / n) + 1;
+    unsigned int numColumns = (s.length() % n == 0) ? s.length() / n : s.length() / n + 1;
     unsigned int length = numColumns * n;
     char back = s.back();
     int fill;
@@ -143,7 +161,16 @@ Matrix Hill::l2num(const std::string &s, const Matrix &E) const {
 std::string Hill::n2let(const Matrix &A) const {
     std::string result;
     for (int i = 0; i < A.size(1) * A.size(2); i++) {
-        result += (char) (A.get(i) + ASCII_OFFSET);
+        char c = A.get(i);
+        if (c == 28) {
+            result += ' ';
+        } else if (c == 27) {
+            result += '?';
+        } else if (c == 26) {
+            result += '.';
+        } else {
+            result += (char) (A.get(i) + ASCII_OFFSET);
+        }
     }
 //    for (char &c : result) {
 //        std::cout << c << " ";
@@ -185,7 +212,7 @@ unsigned int Hill::mod(int a, int b) const {
     return (c < 0) ? c + b : c;
 }
 
-void Hill::row_mult(Matrix &A, unsigned int i, unsigned int j, unsigned int k, unsigned int c) const{
+void Hill::row_mult(Matrix &A, unsigned int i, unsigned int j, unsigned int k, unsigned int c) const {
     //For row i of Matrix A, multiply columns j through k by c, mod 29
     for (unsigned int col = j; col < k; col++) {
         A.set(i, col, mod(A.get(i, col) * c, 29));
@@ -193,7 +220,8 @@ void Hill::row_mult(Matrix &A, unsigned int i, unsigned int j, unsigned int k, u
 }
 
 void
-Hill::row_diff(Matrix &A, unsigned int i, unsigned int j, unsigned int k, Matrix &B, unsigned int l, unsigned int c) const{
+Hill::row_diff(Matrix &A, unsigned int i, unsigned int j, unsigned int k, Matrix &B, unsigned int l,
+               unsigned int c) const {
     //Multiply columns j through k of row l of Matrix B by c and subtract from columns j through k of row i of Matrix A, mod 29
 //    row_mult(B, l, j, k, c);
     Matrix m = B;
