@@ -7,6 +7,8 @@
 
 #include "Matrix.hpp"
 
+#define ASCII_OFFSET 65
+
 /**
  * A C++ class to perform encryption/decryption and cryptanalysis using/of the Hill cipher with a 29 character alphabet.
  */
@@ -95,9 +97,6 @@ public:
      */
     bool kpa(const std::vector<std::string> &P, const std::vector<std::string> &C, unsigned int n);
 
-    //Calculate the matrix inversion of A, mod 29
-    Matrix inv_mod(Matrix A); //an empty matrix is returned if A is not invertible
-
 private:
     Matrix D; //current decryption key; must be consistent with E
     Matrix E; //current encryption key; must be consistent with D
@@ -107,24 +106,26 @@ private:
 
     //YOU ARE FREE TO IMPLEMENT THESE METHODS AND/OR ADD YOUR OWN
     //convert the string of characters in s to the equivalent numerical values using our 29 character alphabet and put in matrix suitable for n-by-n encryption matrix
-    Matrix l2num(const std::string &s, unsigned int n);
+    Matrix l2num(const std::string &s, const Matrix &E) const;
 
     //convert the matrix to a string of characters using our 29 character alphabet
-    std::string n2let(const Matrix &A);
+    std::string n2let(const Matrix &A) const;
 
+    //Calculate the matrix inversion of A, mod 29
+    Matrix inv_mod(Matrix A) const; //an empty matrix is returned if A is not invertible
 
     //calculate c = a mod b, where c = [0,b)
-    unsigned int mod(int a, int b);
+    unsigned int mod(int a, int b) const;
 
     //For row i of Matrix A, multiply columns j through k by c, mod 29
     //(i.e., in Matlab notation A(i,j:k) = mod(c*A(i,j:k), 29))
     //NOTE: matrix pass by reference means all operations occur in place
-    void row_mult(Matrix &A, unsigned int i, unsigned int j, unsigned int k, unsigned int c);
+    void row_mult(Matrix &A, unsigned int i, unsigned int j, unsigned int k, unsigned int c) const;
 
     //Multiply columns j through k of row l of Matrix B by c and subtract from columns j through k of row i of Matrix A, mod 29
     //(i.e., in Matlab notation A(i,j:k) = mod(A(i,j:K) - c*B(l,j:k), 29)
     //NOTE: matrix pass by reference means all operations occur in place
-    void row_diff(Matrix &A, unsigned int i, unsigned int j, unsigned int k, Matrix &B, unsigned int l, unsigned int c);
+    void row_diff(Matrix &A, unsigned int i, unsigned int j, unsigned int k, Matrix &B, unsigned int l, unsigned int c) const;
 };
 
 #endif

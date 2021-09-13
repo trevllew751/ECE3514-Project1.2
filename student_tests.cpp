@@ -56,3 +56,19 @@ TEST_CASE("setD", "[Hill]") {
     Matrix F(std::vector<int>(6, 1), 3, 2);
     REQUIRE_FALSE(LS.setD(F));
 }
+
+TEST_CASE("encrypt(string)", "[Hill]") {
+    Matrix E(std::vector<int>{17, 23, 11, 5, 9, 2, 20, 3, 12}, 3, 3);
+    Hill LS (E, true);
+    REQUIRE(LS.encrypt("WANT HELP.") == "ZXVXOBREOTLM");
+    Matrix A(std::vector<int>(9, 1), 3, 3);
+    Hill hill(A, true);
+    REQUIRE(hill.encrypt("Hello").empty());
+}
+
+TEST_CASE("encrypt(string, Matrix)", "[Hill]") {
+    Matrix zero(std::vector<int>(), 0, 0);
+    Matrix E(std::vector<int>{17, 23, 11, 5, 9, 2, 20, 3, 12}, 3, 3);
+    Hill LS;
+    REQUIRE(LS.encrypt("WANT HELP.", E) == "ZXVXOBREOTLM");
+}
