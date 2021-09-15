@@ -43,9 +43,18 @@ Matrix Hill::getD() const {
 
 bool Hill::setE(const Matrix &E) {
     Matrix zero(std::vector<int>(), 0, 0);
-    if (!inv_mod(E).equal(Matrix(std::vector<int>(), 0, 0))) {
+    if (E.size(1) <= 1 || E.size(2) <= 1 || E.equal(Matrix(std::vector<int>(), 0, 0))) {
+        this->E = zero;
+        this->D = zero;
+        return false;
+    }
+    Matrix inverse = inv_mod(E);
+    if (!inverse.equal(Matrix(std::vector<int>(), 0, 0))) {
         this->E = E;
-        this->D = inv_mod(E);
+        for (int i = 0; i < this->E.size(1) * this->E.size(2); i++) {
+            this->E.set(i, mod(this->E.get(i), 29));
+        }
+        this->D = inverse;
         return true;
     }
     this->E = zero;
@@ -55,9 +64,18 @@ bool Hill::setE(const Matrix &E) {
 
 bool Hill::setD(const Matrix &D) {
     Matrix zero(std::vector<int>(), 0, 0);
-    if (!inv_mod(D).equal(Matrix(std::vector<int>(), 0, 0))) {
+    if (D.size(1) <= 1 || D.size(2) <= 1 || D.equal(Matrix(std::vector<int>(), 0, 0))) {
+        this->E = zero;
+        this->D = zero;
+        return false;
+    }
+    Matrix inverse = inv_mod(D);
+    if (!inverse.equal(Matrix(std::vector<int>(), 0, 0))) {
         this->D = D;
-        this->E = inv_mod(D);
+        for (int i = 0; i < this->D.size(1) * this->D.size(2); i++) {
+            this->D.set(i, mod(this->D.get(i), 29));
+        }
+        this->E = inverse;
         return true;
     }
     this->E = zero;
@@ -71,12 +89,13 @@ std::string Hill::encrypt(const std::string &P) const {
         return "";
     }
     Matrix nums = l2num(P, this->E);
+    if (nums.equal(Matrix(std::vector<int>(), 0, 0))) {
+        return "";
+    }
     Matrix encrypted = E.mult(nums);
     for (int i = 0; i < encrypted.size(1) * encrypted.size(2); i++) {
         encrypted.set(i, encrypted.get(i) % 29);
-//        std::cout << encrypted.get(i) << " ";
     }
-//    std::cout << std::endl;
     return n2let(encrypted);
 }
 
@@ -85,8 +104,15 @@ std::string Hill::encrypt(const std::string &P, const Matrix &E) {
         inv_mod(E).equal(Matrix(std::vector<int>(), 0, 0))) {
         return "";
     }
-    Matrix nums = l2num(P, E);
-    Matrix encrypted = E.mult(nums);
+    Matrix e = E;
+    for (int i = 0; i < e.size(1) * e.size(2); i++) {
+        e.set(i, mod(e.get(i), 29));
+    }
+    Matrix nums = l2num(P, e);
+    if (nums.equal(Matrix(std::vector<int>(), 0, 0))) {
+        return "";
+    }
+    Matrix encrypted = e.mult(nums);
     for (int i = 0; i < encrypted.size(1) * encrypted.size(2); i++) {
         encrypted.set(i, encrypted.get(i) % 29);
     }
@@ -99,6 +125,9 @@ std::string Hill::decrypt(const std::string &C) const {
         return "";
     }
     Matrix nums = l2num(C, D);
+    if (nums.equal(Matrix(std::vector<int>(), 0, 0))) {
+        return "";
+    }
     Matrix decrypted = D.mult(nums);
     for (int i = 0; i < decrypted.size(1) * decrypted.size(2); i++) {
         decrypted.set(i, decrypted.get(i) % 29);
@@ -111,7 +140,14 @@ std::string Hill::decrypt(const std::string &C, const Matrix &D) {
         inv_mod(D).equal(Matrix(std::vector<int>(), 0, 0))) {
         return "";
     }
+    Matrix d = D;
+    for (int i = 0; i < d.size(1) * d.size(2); i++) {
+        d.set(i, mod(d.get(i), 29));
+    }
     Matrix nums = l2num(C, D);
+    if (nums.equal(Matrix(std::vector<int>(), 0, 0))) {
+        return "";
+    }
     Matrix decrypted = D.mult(nums);
     for (int i = 0; i < decrypted.size(1) * decrypted.size(2); i++) {
         decrypted.set(i, decrypted.get(i) % 29);
@@ -120,27 +156,34 @@ std::string Hill::decrypt(const std::string &C, const Matrix &D) {
 }
 
 bool Hill::kpa(const std::vector<std::string> &P, const std::vector<std::string> &C, unsigned int n) {
+    if (P.size() != C.size()) { return false; }
+    std::string plaintext;
+    std::string ciphertext;
+    for (int i = 0; i < P.size(); i++) {
+        plaintext += P.at(i);
+        ciphertext += C.at(i);
+    }
+    if (plaintext.length() != ciphertext.length()) { return false; }
+    Matrix E(std::vector<int>(n * n, 1), n, n);
+    Matrix plaintextNums = l2num(plaintext, E);
+    Matrix ciphertextNums = l2num(ciphertext, E);
+    plaintextNums = plaintextNums.trans();
+    ciphertextNums = ciphertextNums.trans();
+
     return false;
 }
 
 Matrix Hill::l2num(const std::string &s, const Matrix &E) const {
+    std::string validCharacters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ. ?";
     unsigned int n = E.size(1);
     unsigned int numColumns = (s.length() % n == 0) ? s.length() / n : s.length() / n + 1;
     unsigned int length = numColumns * n;
-    char back = s.back();
-    int fill;
-    if (back == ' ') {
-        fill = 28;
-    } else if (back == '?') {
-        fill = 27;
-    } else if (back == '.') {
-        fill = 26;
-    } else {
-        fill = back - ASCII_OFFSET;
-    }
-    std::vector<int> nums(length, fill);
+    std::vector<int> nums(length, 28); // fill with spaces for padding
     for (int i = 0; i < s.length(); i++) {
         char c = s.at(i);
+        if (validCharacters.find(c) == std::string::npos) {
+            return Matrix(std::vector<int>(), 0, 0);
+        }
         if (c == ' ') {
             nums.at(i) = 28;
         } else if (c == '?') {
@@ -151,10 +194,6 @@ Matrix Hill::l2num(const std::string &s, const Matrix &E) const {
             nums.at(i) = s.at(i) - ASCII_OFFSET;
         }
     }
-//    for (int i : nums) {
-//        std::cout << i << " ";
-//    }
-//    std::cout << std::endl;
     return Matrix(nums, n, numColumns);
 }
 
@@ -172,9 +211,6 @@ std::string Hill::n2let(const Matrix &A) const {
             result += (char) (A.get(i) + ASCII_OFFSET);
         }
     }
-//    for (char &c : result) {
-//        std::cout << c << " ";
-//    }
     return result;
 }
 
@@ -223,7 +259,6 @@ void
 Hill::row_diff(Matrix &A, unsigned int i, unsigned int j, unsigned int k, Matrix &B, unsigned int l,
                unsigned int c) const {
     //Multiply columns j through k of row l of Matrix B by c and subtract from columns j through k of row i of Matrix A, mod 29
-//    row_mult(B, l, j, k, c);
     Matrix m = B;
     for (unsigned int col = j; col < k; col++) {
         m.set(l, col, m.get(l, col) * c);
