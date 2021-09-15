@@ -103,3 +103,14 @@ TEST_CASE("decrypt(string, Matrix)", "[Hill]") {
     REQUIRE(LS.decrypt("ZXVXOBREOTLM", D) == "WANT HELP...");
     REQUIRE(LS.decrypt("Invalid characters: 32^%#", D).empty());
 }
+
+TEST_CASE("kpa", "[Hill]") {
+    Hill LS;
+    std::vector<std::string> P{"BEAN"};
+    std::vector<std::string> C{"OYKH"};
+    Matrix inv(std::vector<int>{12, 2, 16, 28}, 2, 2);
+    Matrix key(std::vector<int>{2, 4, 3, 5}, 2, 2);
+    REQUIRE(LS.kpa(P, C, 2));
+    REQUIRE(LS.getD().equal(inv));
+    REQUIRE(LS.getE().equal(key));
+}

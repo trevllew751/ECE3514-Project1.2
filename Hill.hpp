@@ -117,6 +117,8 @@ private:
     //calculate c = a mod b, where c = [0,b)
     unsigned int mod(int a, int b) const;
 
+    bool row_reduce(Matrix &A, Matrix &B) const;
+
     //For row i of Matrix A, multiply columns j through k by c, mod 29
     //(i.e., in Matlab notation A(i,j:k) = mod(c*A(i,j:k), 29))
     //NOTE: matrix pass by reference means all operations occur in place

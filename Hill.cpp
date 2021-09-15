@@ -43,7 +43,7 @@ Matrix Hill::getD() const {
 
 bool Hill::setE(const Matrix &E) {
     Matrix zero(std::vector<int>(), 0, 0);
-    if (E.size(1) <= 1 || E.size(2) <= 1 || E.equal(Matrix(std::vector<int>(), 0, 0))) {
+    if (E.size(1) <= 1 || E.size(2) <= 1) {
         this->E = zero;
         this->D = zero;
         return false;
@@ -64,7 +64,7 @@ bool Hill::setE(const Matrix &E) {
 
 bool Hill::setD(const Matrix &D) {
     Matrix zero(std::vector<int>(), 0, 0);
-    if (D.size(1) <= 1 || D.size(2) <= 1 || D.equal(Matrix(std::vector<int>(), 0, 0))) {
+    if (D.size(1) <= 1 || D.size(2) <= 1) {
         this->E = zero;
         this->D = zero;
         return false;
@@ -157,19 +157,25 @@ std::string Hill::decrypt(const std::string &C, const Matrix &D) {
 
 bool Hill::kpa(const std::vector<std::string> &P, const std::vector<std::string> &C, unsigned int n) {
     if (P.size() != C.size()) { return false; }
+    if (P.empty() || C.empty()) { return false; }
     std::string plaintext;
     std::string ciphertext;
     for (int i = 0; i < P.size(); i++) {
         plaintext += P.at(i);
         ciphertext += C.at(i);
     }
+    if (plaintext.empty() || ciphertext.empty()) { return false; }
     if (plaintext.length() != ciphertext.length()) { return false; }
     Matrix E(std::vector<int>(n * n, 1), n, n);
     Matrix plaintextNums = l2num(plaintext, E);
     Matrix ciphertextNums = l2num(ciphertext, E);
     plaintextNums = plaintextNums.trans();
     ciphertextNums = ciphertextNums.trans();
-
+    if(row_reduce(ciphertextNums, plaintextNums)) {
+        setD(plaintextNums.trans());
+        setE(inv_mod(this->D));
+        return true;
+    }
     return false;
 }
 
@@ -224,29 +230,57 @@ Matrix Hill::inv_mod(Matrix A) const {
     }
     Matrix result = I;
     Matrix mat = A;
-    for (int i = 0; i < A.size(1); i++) {
-        int n = mat.get(i, i);
-        if (n == 0) { break; }
-        int inverse = ZI29[n - 1];
-        row_mult(result, i, 0, result.size(2), inverse);
-        row_mult(mat, i, 0, mat.size(2), inverse);
-        for (int j = 0; j < A.size(1); j++) {
-            if (j != i) {
-                row_diff(result, j, 0, result.size(2), result, i, mat.get(j, i));
-                row_diff(mat, j, 0, mat.size(2), mat, i, mat.get(j, i));
-            }
-        }
-    }
-    if (!mat.equal(I)) {
+    if (!row_reduce(mat, result)) {
         return Matrix(std::vector<int>(), 0, 0);
     }
     return result;
+//    for (int i = 0; i < A.size(1); i++) {
+//        int n = mat.get(i, i);
+//        if (n == 0) { break; }
+//        int inverse = ZI29[n - 1];
+//        row_mult(result, i, 0, result.size(2), inverse);
+//        row_mult(mat, i, 0, mat.size(2), inverse);
+//        for (int j = 0; j < A.size(1); j++) {
+//            if (j != i) {
+//                row_diff(result, j, 0, result.size(2), result, i, mat.get(j, i));
+//                row_diff(mat, j, 0, mat.size(2), mat, i, mat.get(j, i));
+//            }
+//        }
+//    }
+//    if (!mat.equal(I)) {
+//        return Matrix(std::vector<int>(), 0, 0);
+//    }
+//    return result;
 }
 
 unsigned int Hill::mod(int a, int b) const {
     int c = a % b;
     return (c < 0) ? c + b : c;
 }
+
+bool Hill::row_reduce(Matrix &A, Matrix &B) const {
+    Matrix I(std::vector<int>(A.size(1) * A.size(2)), A.size(1), A.size(2));
+    for (int i = 0; i < I.size(1); i++) {
+        I.set(i, i, 1);
+    }
+    for (int i = 0; i < A.size(1); i++) {
+        int n = A.get(i, i);
+        if (n == 0) { break; }
+        int inverse = ZI29[n - 1];
+        row_mult(B, i, 0, B.size(2), inverse);
+        row_mult(A, i, 0, A.size(2), inverse);
+        for (int j = 0; j < A.size(1); j++) {
+            if (j != i) {
+                row_diff(B, j, 0, B.size(2), B, i, A.get(j, i));
+                row_diff(A, j, 0, A.size(2), A, i, A.get(j, i));
+            }
+        }
+    }
+    if (!A.equal(I)) {
+        return false;
+    }
+    return true;
+};
 
 void Hill::row_mult(Matrix &A, unsigned int i, unsigned int j, unsigned int k, unsigned int c) const {
     //For row i of Matrix A, multiply columns j through k by c, mod 29
