@@ -105,12 +105,33 @@ TEST_CASE("decrypt(string, Matrix)", "[Hill]") {
 }
 
 TEST_CASE("kpa", "[Hill]") {
-    Hill LS;
     std::vector<std::string> P{"BEAN"};
     std::vector<std::string> C{"OYKH"};
     Matrix inv(std::vector<int>{12, 2, 16, 28}, 2, 2);
     Matrix key(std::vector<int>{2, 4, 3, 5}, 2, 2);
-    REQUIRE(LS.kpa(P, C, 2));
+    Hill LS(key, inv);
+//    P.emplace_back("HELLOO");
+//    C.emplace_back(LS.encrypt("HELLOO"));
+//    std::cout<<LS.encrypt("HELLOO");
+//    REQUIRE(LS.kpa(P, C, 2));
+//    REQUIRE(LS.getD().equal(inv));
+//    REQUIRE(LS.getE().equal(key));
+    std::vector<std::string> P1{"BEAN", "HELLOO"};
+    std::vector<std::string> C1{"INVA", "INVALI"};
+//    REQUIRE_FALSE(LS.kpa(P1, C1, 2));
+    std::vector<std::string> P2 = {"BEAN", "HELLOO"};
+    std::vector<std::string> C2 = {"INVA", ".T.MMK"};
+    REQUIRE(LS.kpa(P2, C2, 2));
+//    LS.getD().output(std::cout);
+//    LS.getE().output(std::cout);
     REQUIRE(LS.getD().equal(inv));
     REQUIRE(LS.getE().equal(key));
+}
+
+TEST_CASE("test inv_mod with random matrices", "[Hill]") {
+    Hill A(Matrix(std::vector<int>{3, 16, 13, 17, 27, 6, 25, 10, 3, 3, 9, 20, 14, 9, 25, 3}, 4, 4), true);
+    Hill B(Matrix(std::vector<int>{3, 16, 13, 17, 27, 6, 25, 10, 3, 3, 9, 20, 14, 9, 25, 3}, 4, 4), false);
+    Hill C(Matrix(std::vector<int>{13, 14, 8, 10, 1, 28, 12, 24, 2, 26, 27, 12, 26, 11, 11, 4}, 4, 4), true);
+    Hill D(Matrix(std::vector<int>{13, 14, 8, 10, 1, 28, 12, 24, 2, 26, 27, 12, 26, 11, 11, 4}, 4, 4), false);
+
 }

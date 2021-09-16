@@ -128,6 +128,8 @@ private:
     //(i.e., in Matlab notation A(i,j:k) = mod(A(i,j:K) - c*B(l,j:k), 29)
     //NOTE: matrix pass by reference means all operations occur in place
     void row_diff(Matrix &A, unsigned int i, unsigned int j, unsigned int k, Matrix &B, unsigned int l, unsigned int c) const;
+
+//    Matrix matrix_mod(Matrix &A) const;
 };
 
 #endif

@@ -6,11 +6,7 @@
 
 #IncludeRegexTransform: 
 
-C:/Users/Trevl/Desktop/Projects/School/ECE 3514  - Data Structures and Algorithms/Project 1.2/ECE3514-Project1.2/Hill.cpp
-Hill.hpp
-C:/Users/Trevl/Desktop/Projects/School/ECE 3514  - Data Structures and Algorithms/Project 1.2/ECE3514-Project1.2/Hill.hpp
-
-C:/Users/Trevl/Desktop/Projects/School/ECE 3514  - Data Structures and Algorithms/Project 1.2/ECE3514-Project1.2/Hill.hpp
+C:/Users/Trevl/Desktop/Projects/School/ECE 3514 - Data Structures and Algorithms/Project1.2/ECE3514-Project1.2/Hill.hpp
 iostream
 -
 string
@@ -18,15 +14,15 @@ string
 vector
 -
 Matrix.hpp
-C:/Users/Trevl/Desktop/Projects/School/ECE 3514  - Data Structures and Algorithms/Project 1.2/ECE3514-Project1.2/Matrix.hpp
+C:/Users/Trevl/Desktop/Projects/School/ECE 3514 - Data Structures and Algorithms/Project1.2/ECE3514-Project1.2/Matrix.hpp
 
-C:/Users/Trevl/Desktop/Projects/School/ECE 3514  - Data Structures and Algorithms/Project 1.2/ECE3514-Project1.2/Matrix.hpp
+C:/Users/Trevl/Desktop/Projects/School/ECE 3514 - Data Structures and Algorithms/Project1.2/ECE3514-Project1.2/Matrix.hpp
 iostream
 -
 vector
 -
 
-C:/Users/Trevl/Desktop/Projects/School/ECE 3514  - Data Structures and Algorithms/Project 1.2/ECE3514-Project1.2/catch.hpp
+C:/Users/Trevl/Desktop/Projects/School/ECE 3514 - Data Structures and Algorithms/Project1.2/ECE3514-Project1.2/catch.hpp
 TargetConditionals.h
 -
 cstddef
@@ -408,7 +404,7 @@ string
 memory
 -
 Foundation/Foundation.h
-C:/Users/Trevl/Desktop/Projects/School/ECE 3514  - Data Structures and Algorithms/Project 1.2/ECE3514-Project1.2/Foundation/Foundation.h
+C:/Users/Trevl/Desktop/Projects/School/ECE 3514 - Data Structures and Algorithms/Project1.2/ECE3514-Project1.2/Foundation/Foundation.h
 algorithm
 -
 signal.h
@@ -620,11 +616,11 @@ iomanip
 cassert
 -
 
-C:/Users/Trevl/Desktop/Projects/School/ECE 3514  - Data Structures and Algorithms/Project 1.2/ECE3514-Project1.2/student_tests.cpp
+C:/Users/Trevl/Desktop/Projects/School/ECE 3514 - Data Structures and Algorithms/Project1.2/ECE3514-Project1.2/student_tests.cpp
 catch.hpp
-C:/Users/Trevl/Desktop/Projects/School/ECE 3514  - Data Structures and Algorithms/Project 1.2/ECE3514-Project1.2/catch.hpp
+C:/Users/Trevl/Desktop/Projects/School/ECE 3514 - Data Structures and Algorithms/Project1.2/ECE3514-Project1.2/catch.hpp
 Hill.hpp
-C:/Users/Trevl/Desktop/Projects/School/ECE 3514  - Data Structures and Algorithms/Project 1.2/ECE3514-Project1.2/Hill.hpp
+C:/Users/Trevl/Desktop/Projects/School/ECE 3514 - Data Structures and Algorithms/Project1.2/ECE3514-Project1.2/Hill.hpp
 Matrix.hpp
-C:/Users/Trevl/Desktop/Projects/School/ECE 3514  - Data Structures and Algorithms/Project 1.2/ECE3514-Project1.2/Matrix.hpp
+C:/Users/Trevl/Desktop/Projects/School/ECE 3514 - Data Structures and Algorithms/Project1.2/ECE3514-Project1.2/Matrix.hpp
 

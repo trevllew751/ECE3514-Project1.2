@@ -43,13 +43,13 @@ Matrix Hill::getD() const {
 
 bool Hill::setE(const Matrix &E) {
     Matrix zero(std::vector<int>(), 0, 0);
-    if (E.size(1) <= 1 || E.size(2) <= 1) {
+    if (E.size(1) <= 1 || E.size(2) <= 1 || (E.size(1) != E.size(2))) {
         this->E = zero;
         this->D = zero;
         return false;
     }
     Matrix inverse = inv_mod(E);
-    if (!inverse.equal(Matrix(std::vector<int>(), 0, 0))) {
+    if (!inverse.equal(zero)) {
         this->E = E;
         for (int i = 0; i < this->E.size(1) * this->E.size(2); i++) {
             this->E.set(i, mod(this->E.get(i), 29));
@@ -64,13 +64,13 @@ bool Hill::setE(const Matrix &E) {
 
 bool Hill::setD(const Matrix &D) {
     Matrix zero(std::vector<int>(), 0, 0);
-    if (D.size(1) <= 1 || D.size(2) <= 1) {
+    if (D.size(1) <= 1 || D.size(2) <= 1 || (D.size(1) != D.size(2))) {
         this->E = zero;
         this->D = zero;
         return false;
     }
     Matrix inverse = inv_mod(D);
-    if (!inverse.equal(Matrix(std::vector<int>(), 0, 0))) {
+    if (!inverse.equal(zero)) {
         this->D = D;
         for (int i = 0; i < this->D.size(1) * this->D.size(2); i++) {
             this->D.set(i, mod(this->D.get(i), 29));
@@ -161,20 +161,37 @@ bool Hill::kpa(const std::vector<std::string> &P, const std::vector<std::string>
     std::string plaintext;
     std::string ciphertext;
     for (int i = 0; i < P.size(); i++) {
+        if (P.at(i).length() != C.at(i).length()) {
+            return false;
+        }
         plaintext += P.at(i);
         ciphertext += C.at(i);
     }
     if (plaintext.empty() || ciphertext.empty()) { return false; }
     if (plaintext.length() != ciphertext.length()) { return false; }
+    if (plaintext.length() < n * n) {
+        return false;
+    }
     Matrix E(std::vector<int>(n * n, 1), n, n);
-    Matrix plaintextNums = l2num(plaintext, E);
-    Matrix ciphertextNums = l2num(ciphertext, E);
-    plaintextNums = plaintextNums.trans();
-    ciphertextNums = ciphertextNums.trans();
-    if(row_reduce(ciphertextNums, plaintextNums)) {
-        setD(plaintextNums.trans());
-        setE(inv_mod(this->D));
-        return true;
+    unsigned int length = plaintext.length() / n;
+    for (int i = 0; i < length - 1; i++) {
+        std::string p = plaintext.substr(i * n, n);
+        std::string c = ciphertext.substr(i * n, n);
+        for (int j = i + 1; j < length; j++) {
+            std::string p1 = plaintext.substr(j * n, n);
+            std::string c1 = ciphertext.substr(j * n, n);
+//            plaintext = plaintext.substr(0, n * n);
+//            ciphertext = ciphertext.substr(0, n * n);
+            Matrix plaintextNums = l2num(p + p1, E);
+            Matrix ciphertextNums = l2num(c + c1, E);
+            plaintextNums = plaintextNums.trans();
+            ciphertextNums = ciphertextNums.trans();
+            if (row_reduce(ciphertextNums, plaintextNums)) {
+                setD(plaintextNums.trans());
+                setE(inv_mod(this->D));
+                return true;
+            }
+        }
     }
     return false;
 }
@@ -234,23 +251,6 @@ Matrix Hill::inv_mod(Matrix A) const {
         return Matrix(std::vector<int>(), 0, 0);
     }
     return result;
-//    for (int i = 0; i < A.size(1); i++) {
-//        int n = mat.get(i, i);
-//        if (n == 0) { break; }
-//        int inverse = ZI29[n - 1];
-//        row_mult(result, i, 0, result.size(2), inverse);
-//        row_mult(mat, i, 0, mat.size(2), inverse);
-//        for (int j = 0; j < A.size(1); j++) {
-//            if (j != i) {
-//                row_diff(result, j, 0, result.size(2), result, i, mat.get(j, i));
-//                row_diff(mat, j, 0, mat.size(2), mat, i, mat.get(j, i));
-//            }
-//        }
-//    }
-//    if (!mat.equal(I)) {
-//        return Matrix(std::vector<int>(), 0, 0);
-//    }
-//    return result;
 }
 
 unsigned int Hill::mod(int a, int b) const {
@@ -259,13 +259,14 @@ unsigned int Hill::mod(int a, int b) const {
 }
 
 bool Hill::row_reduce(Matrix &A, Matrix &B) const {
+    Matrix mat = A;
     Matrix I(std::vector<int>(A.size(1) * A.size(2)), A.size(1), A.size(2));
     for (int i = 0; i < I.size(1); i++) {
         I.set(i, i, 1);
     }
     for (int i = 0; i < A.size(1); i++) {
         int n = A.get(i, i);
-        if (n == 0) { break; }
+        if (n <= 0) { break; }
         int inverse = ZI29[n - 1];
         row_mult(B, i, 0, B.size(2), inverse);
         row_mult(A, i, 0, A.size(2), inverse);
@@ -276,10 +277,18 @@ bool Hill::row_reduce(Matrix &A, Matrix &B) const {
             }
         }
     }
-    if (!A.equal(I)) {
-        return false;
+    Matrix m1 = mat.mult(B);
+    Matrix m2 = B.mult(mat);
+    for (int i = 0; i < m1.size(1) * m1.size(2); i++) {
+        m1.set(i, mod(m1.get(i), 29));
+        m2.set(i, mod(m2.get(i), 29));
     }
-    return true;
+    return m1.equal(I) && m2.equal(I);
+//    return A.equal(I);
+//    if (!A.equal(I)) {
+//        return false;
+//    }
+//    return true;
 };
 
 void Hill::row_mult(Matrix &A, unsigned int i, unsigned int j, unsigned int k, unsigned int c) const {
@@ -301,4 +310,10 @@ Hill::row_diff(Matrix &A, unsigned int i, unsigned int j, unsigned int k, Matrix
         A.set(i, col, mod(A.get(i, col) - m.get(l, col), 29));
     }
 }
+
+//Matrix Hill::matrix_mod(Matrix &A) const {
+//    for (int i = 0; i < A.size(1) * A.size(2); i++) {
+//        A.set(i, mod(A.get(i), 29));
+//    }
+//}
 
