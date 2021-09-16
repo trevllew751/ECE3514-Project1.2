@@ -158,42 +158,52 @@ std::string Hill::decrypt(const std::string &C, const Matrix &D) {
 bool Hill::kpa(const std::vector<std::string> &P, const std::vector<std::string> &C, unsigned int n) {
     if (P.size() != C.size()) { return false; }
     if (P.empty() || C.empty()) { return false; }
-    std::string plaintext;
-    std::string ciphertext;
+    Matrix E(std::vector<int>(n * n, 1), n, n);
     for (int i = 0; i < P.size(); i++) {
-        if (P.at(i).length() != C.at(i).length()) {
+        std::string p = P.at(i);
+        std::string c = C.at(i);
+        if (p.length() != c.length()) {
             return false;
         }
-        plaintext += P.at(i);
-        ciphertext += C.at(i);
-    }
-    if (plaintext.empty() || ciphertext.empty()) { return false; }
-    if (plaintext.length() != ciphertext.length()) { return false; }
-    if (plaintext.length() < n * n) {
-        return false;
-    }
-    Matrix E(std::vector<int>(n * n, 1), n, n);
-    unsigned int length = plaintext.length() / n;
-    for (int i = 0; i < length - 1; i++) {
-        std::string p = plaintext.substr(i * n, n);
-        std::string c = ciphertext.substr(i * n, n);
-        for (int j = i + 1; j < length; j++) {
-            std::string p1 = plaintext.substr(j * n, n);
-            std::string c1 = ciphertext.substr(j * n, n);
-//            plaintext = plaintext.substr(0, n * n);
-//            ciphertext = ciphertext.substr(0, n * n);
-            Matrix plaintextNums = l2num(p + p1, E);
-            Matrix ciphertextNums = l2num(c + c1, E);
-            plaintextNums = plaintextNums.trans();
-            ciphertextNums = ciphertextNums.trans();
+        if (p.length() >= n * n) {
+            std::string plaintext = p.substr(0, n * n);
+            std::string ciphertext = c.substr(0, n * n);
+            Matrix plaintextNums = l2num(plaintext, E).trans();
+            Matrix ciphertextNums = l2num(ciphertext, E).trans();
             if (row_reduce(ciphertextNums, plaintextNums)) {
                 setD(plaintextNums.trans());
                 setE(inv_mod(this->D));
                 return true;
             }
         }
+        return false;
     }
-    return false;
+//    if (plaintext.empty() || ciphertext.empty()) { return false; }
+//    if (plaintext.length() != ciphertext.length()) { return false; }
+//    if (plaintext.length() < n * n) {
+//        return false;
+//    }
+//    unsigned int length = plaintext.length() / n;
+//    for (int i = 0; i < length - 1; i++) {
+//        std::string p = plaintext.substr(i * n, n);
+//        std::string c = ciphertext.substr(i * n, n);
+//        for (int j = i + 1; j < length; j++) {
+//            std::string p1 = plaintext.substr(j * n, n);
+//            std::string c1 = ciphertext.substr(j * n, n);
+//            plaintext = plaintext.substr(0, n * n);
+//            ciphertext = ciphertext.substr(0, n * n);
+//            Matrix plaintextNums = l2num(p + p1, E);
+//            Matrix ciphertextNums = l2num(c + c1, E);
+//            plaintextNums = plaintextNums.trans();
+//            ciphertextNums = ciphertextNums.trans();
+//            if (row_reduce(ciphertextNums, plaintextNums)) {
+//                setD(plaintextNums.trans());
+//                setE(inv_mod(this->D));
+//                return true;
+//            }
+//        }
+//    }
+//    return false;
 }
 
 Matrix Hill::l2num(const std::string &s, const Matrix &E) const {
@@ -277,14 +287,14 @@ bool Hill::row_reduce(Matrix &A, Matrix &B) const {
             }
         }
     }
-    Matrix m1 = mat.mult(B);
-    Matrix m2 = B.mult(mat);
-    for (int i = 0; i < m1.size(1) * m1.size(2); i++) {
-        m1.set(i, mod(m1.get(i), 29));
-        m2.set(i, mod(m2.get(i), 29));
-    }
-    return m1.equal(I) && m2.equal(I);
-//    return A.equal(I);
+//    Matrix m1 = mat.mult(B);
+//    Matrix m2 = B.mult(mat);
+//    for (int i = 0; i < m1.size(1) * m1.size(2); i++) {
+//        m1.set(i, mod(m1.get(i), 29));
+//        m2.set(i, mod(m2.get(i), 29));
+//    }
+//    return m1.equal(I) && m2.equal(I);
+    return A.equal(I);
 //    if (!A.equal(I)) {
 //        return false;
 //    }
